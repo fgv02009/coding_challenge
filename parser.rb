@@ -16,16 +16,20 @@ class ParseFile
     File.readlines(@file_name).each do |line|
       section = get_sections(line)
       key_val = get_keys_values(line)
+      key_val_cont = get_key_val_cont(line)
       if section
         @count_line[count] = section
       elsif key_val
         @count_line[count] = key_val
+      elsif key_val_cont
+        @count_line[count] = key_val_cont
       end
       count += 1
     end
     @sections.each do |section|
       @sections_content[section] = []
     end
+    self.fix_cont_lines
   end
 
   def get_value(section, key)
@@ -67,7 +71,38 @@ class ParseFile
       @keys_values[key] = value
       return {key => value}
     end
+  end
 
+  def get_key_val_cont(line)
+    if line[0] == " "
+      return {"cont" => line.strip!}
+    end
+  end
+
+  def fix_cont_lines
+    @sections_content.each do |section, array_key_values|
+      counter = 1
+      array_key_values.each_with_index do |hash, index|
+        hash.each do |key, value|
+          if key == "cont"
+            previous_key = array_key_values[index-counter].keys[0]
+            array_key_values[index-counter][previous_key] = array_key_values[index-counter][previous_key] + array_key_values[index][key]
+            p index
+            counter +=1
+            # array_key_values.delete_at(index)
+          end
+        end
+      end
+      #Need to delete ones with "cont as key"
+      # @sections_content.each do |section, array_key_values|
+      #   array_key_values.select do |hash|
+      #     p hash["cont"]
+      #     if hash["cont"] == nil
+      #     end
+      #   end
+      # end
+    end
+    p @sections_content
   end
 
   #REFACTOR!
@@ -98,22 +133,23 @@ class ParseFile
   def write
     File.open('test2.dos', 'w') { |file|
       @sections_content.each do |section, content|
-        file << "[#{section}]\n\r"
+        p content.length
+        file << "\n\r[#{section}]\n\r"
         @sections_content[section].each do |content_hash|
-          file << "#{content_hash}\n\r"
+          file << "#{format_content_hash(content_hash)}\n\r"
         end
       end
     }
-      # file.write("your text") }
   end
 
-  def add_colon(line)
-
+  def format_content_hash(content)
+    content = content.flatten
+    content.join(":")
   end
 
 
 
-
+########################
 
 
   private
@@ -138,14 +174,12 @@ class ParseFile
   def rid_white_spaces_values(value)
     return value.chop!
   end
-
 end
 
 newbie = ParseFile.new('test.dos')
-p newbie.sections_content
-p newbie.get_value("header", "project")
-p newbie.get_value("header", "budget")
-p newbie.get_value("header", "accessed")
-newbie.write
+# p newbie.count_line
+newbie.sections_content
+newbie.fix_cont_lines
+# newbie.write
 
 

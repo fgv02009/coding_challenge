@@ -1,10 +1,14 @@
-[header]
-{"project"=>"Programming Test"}
-{"budget"=>"4.5"}
-{"accessed"=>"205"}
+
+[header]
+project:Programming Test
+budget:4.5
+accessed:205
+butss:fun
+
 [meta data]
-{"description"=>"This is a tediously long description of the"}
-{"correction text"=>"I meant 'moderately,' not 'tediously,' above."}
+description:This is a tediously long description of the programming test that you are taking. Tedious isn't the right word, but it's the first word that comes to mind.
+correction text:I meant 'moderately,' not 'tediously,' above.
+
 [trailer]
-{"budget"=>"all out of budget"}
+budget:all out of budget.
 
