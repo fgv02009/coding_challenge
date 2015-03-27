@@ -23,6 +23,16 @@ class ParseFile
     fill_section_content
   end
 
+  def get_value(section, key)
+    @section_content.each do |sect, content|
+      if section == sect
+        content.each do |topic|
+          return convert(topic[key]) if topic[key]
+        end
+      end
+    end
+  end
+
   def fill_section_content
       line_number_sections = Hash[@index_of_section_headers.zip(@sections)]
       line_number_sections.each do |line_num, section_title|
@@ -59,16 +69,6 @@ class ParseFile
   def set_sections
     @section_content.each do |section_title, content_arr|
       @sections << section_title
-    end
-  end
-
-  def get_value(section, key)
-    @section_content.each do |sect, content|
-      if section == sect
-        content.each do |topic|
-          return convert(topic[key]) if topic[key]
-        end
-      end
     end
   end
 
