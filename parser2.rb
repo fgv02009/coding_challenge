@@ -33,6 +33,23 @@ class ParseFile
     end
   end
 
+  def set_section_content
+    @file_arr = @file_str.split("*")
+    @file_arr.each do |line|
+      if line.match(/\[[a-zA-Z\s]+\]/)
+        clean(line)
+        @section_content[line] = []
+      end
+    end
+    get_section_index
+  end
+
+  def set_sections
+    @section_content.each do |section_title, content_arr|
+      @sections << section_title
+    end
+  end
+
   def fill_section_content
       line_number_sections = Hash[@index_of_section_headers.zip(@sections)]
       line_number_sections.each do |line_num, section_title|
@@ -51,26 +68,10 @@ class ParseFile
     set_key_values
   end
 
-  def set_section_content
-    @file_arr = @file_str.split("*")
-    @file_arr.each do |line|
-      if line.match(/\[[a-zA-Z\s]+\]/)
-        clean(line)
-        @section_content[line] = []
-      end
-    end
-    get_section_index
-  end
-
   def section_or_key?(line)
     line.include?("\[") || line.include?("\:")
   end
 
-  def set_sections
-    @section_content.each do |section_title, content_arr|
-      @sections << section_title
-    end
-  end
 
 ##################################
 # Writing to a file
@@ -186,7 +187,4 @@ private
     pair = Hash.try_convert(key => value)
     return pair
   end
-
 end
-
-
