@@ -3,7 +3,7 @@
 project:Programming Test
 budget:4.5
 accessed:205
-butss:fun
+math:fun
 
 [meta data]
 description:This is a tediously long description of the programming test that you are taking. Tedious isn't the right word, but it's the first word that comes to mind.
@@ -11,4 +11,7 @@
 
 [trailer]
 budget:all out of budget.
+
+[friends]
+weekend:funz
 

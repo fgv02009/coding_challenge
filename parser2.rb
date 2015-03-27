@@ -12,9 +12,10 @@ class ParseFile
   def parse
     file_string = ""
     File.readlines(@file_name).each do |line|
-      if line.include?("\[") || line.include?("\:")
-        add_star(line)
-      end
+      section_or_key?(line)
+      # if line.include?("\[") || line.include?("\:")
+      #   add_star(line)
+      # end
       file_string += line.strip + " "
     end
     file_arr = file_string.split("*")
@@ -44,7 +45,6 @@ class ParseFile
           end
         end
     end
-
     set_key_values
   end
 
@@ -56,6 +56,70 @@ class ParseFile
         end
       end
     end
+  end
+
+  def section_or_key?(line)
+    if line.include?("\[") || line.include?("\:")
+        add_star(line)
+    end
+  end
+
+
+##################################
+# Writing to a file
+
+  def write(section, key, value)
+    if @section_content[section]
+      @section_content[section] << (Hash.try_convert(key => value))
+    else
+      @section_content[section] = (Hash.try_convert(key => value))
+    end
+    self.save
+  end
+
+  def save
+    File.open('test2.dos', 'w') { |file|
+      @section_content.each do |section, content|
+        file << "\n\r[#{section}]\n\r"
+        @section_content[section].each do |content_hash|
+          # if content_hash.values[0].length > 60
+
+          file << "#{format_content_hash(content_hash)}\n\r"
+        end
+      end
+    }
+  end
+######################
+
+private
+
+  def get_section_index(file_arr)
+    file_arr.each_with_index do |word, index|
+      if @section_content.has_key?(word)
+        @index_of_section_headers << index
+      end
+    end
+    return @index_of_section_headers
+  end
+
+  def format_content_hash(content)
+    content = content.flatten
+    content.join(":")
+  end
+
+   def rid_white_spaces_quotes(text)
+    text_arr = text.split('')
+    until text_arr[0] != " "
+      text_arr.shift
+    end
+    until text_arr[-1] != " "
+      text_arr.pop
+    end
+    return text_arr.join('')
+  end
+
+  def rid_white_spaces_values(value)
+    return value.chop!
   end
 
   def convert(value)
@@ -78,15 +142,6 @@ class ParseFile
     line.insert(0,"*")
   end
 
-  def get_section_index(file_arr)
-    file_arr.each_with_index do |word, index|
-      if @section_content.has_key?(word)
-        @index_of_section_headers << index
-      end
-    end
-    return @index_of_section_headers
-  end
-
   def set_key_values
     @section_content
     @section_content.each do |section, pairs|
@@ -97,7 +152,6 @@ class ParseFile
     @section_content
   end
 
-
   def get_keys_values(pair)
     key = pair.split(":")[0]
     key = rid_white_spaces_quotes(key)
@@ -106,50 +160,6 @@ class ParseFile
     value = rid_white_spaces_quotes(value)
     pair = Hash.try_convert(key => value)
     return pair
-  end
-
-  def rid_white_spaces_quotes(text)
-    text_arr = text.split('')
-    until text_arr[0] != " "
-      text_arr.shift
-    end
-    until text_arr[-1] != " "
-      text_arr.pop
-    end
-    return text_arr.join('')
-  end
-
-  def rid_white_spaces_values(value)
-    return value.chop!
-  end
-
-##################################
-# Writing to a file
-
-  def write(section, key, value)
-    if @section_content[section]
-      @section_content[section] << (Hash.try_convert(key => value))
-    end
-    self.save
-  end
-
-
-  def format_content_hash(content)
-    content = content.flatten
-    content.join(":")
-  end
-
-  def save
-    File.open('test2.dos', 'w') { |file|
-      @section_content.each do |section, content|
-        file << "\n\r[#{section}]\n\r"
-        @section_content[section].each do |content_hash|
-          # if content_hash.values[0].length > 60
-
-          file << "#{format_content_hash(content_hash)}\n\r"
-        end
-      end
-    }
   end
 
 end
@@ -163,6 +173,8 @@ p newbie.get_value("meta data", "correction text")
 p newbie.get_value("trailer", "budget")
 
 
+
 newbie.save
-newbie.write("header", "butss", "fun")
+newbie.write("header", "math", "fun")
+newbie.write("friends", "weekend", "funz")
 
