@@ -1,7 +1,7 @@
 require 'pry'
 class ParseFile
-  #TESTED
   attr_reader :section_content, :file_str, :file_name, :section_content, :index_of_section_headers, :sections, :file_arr
+
   def initialize(file_name)
     @file_str = ""
     @file_name = file_name
@@ -10,7 +10,7 @@ class ParseFile
     @sections = []
     @file_arr = []
   end
-#TESTED
+
   def parse
     File.readlines(@file_name).each do |line|
       if section_or_key?(line)
@@ -18,13 +18,11 @@ class ParseFile
       end
       @file_str += line.strip + " "
     end
-    p @file_str
     set_section_content
     set_sections
     fill_section_content
   end
 
-#TESTED
   def fill_section_content
       line_number_sections = Hash[@index_of_section_headers.zip(@sections)]
       line_number_sections.each do |line_num, section_title|
@@ -40,10 +38,9 @@ class ParseFile
           end
         end
     end
-
     set_key_values
   end
-#TESTED#
+
   def set_section_content
     @file_arr = @file_str.split("*")
     @file_arr.each do |line|
@@ -52,23 +49,19 @@ class ParseFile
         @section_content[line] = []
       end
     end
-
     get_section_index
   end
 
-#TESTED#
   def section_or_key?(line)
     line.include?("\[") || line.include?("\:")
   end
 
-#TESTED#
   def set_sections
     @section_content.each do |section_title, content_arr|
       @sections << section_title
     end
   end
 
-#TESTED#
   def get_value(section, key)
     @section_content.each do |sect, content|
       if section == sect
@@ -78,9 +71,6 @@ class ParseFile
       end
     end
   end
-
-
-
 
 ##################################
 # Writing to a file
@@ -95,7 +85,7 @@ class ParseFile
   end
 
   def save
-    File.open('test2.dos', 'w') { |file|
+    File.open(@file_name, 'w') { |file|
       @section_content.each do |section, content|
         file << "\n[#{section}]\n"
         @section_content[section].each do |content_hash|
@@ -107,7 +97,6 @@ class ParseFile
         end
       end
     }
-
   end
 
   def split_line(content_hash)
@@ -124,9 +113,6 @@ class ParseFile
     end
     return str
   end
-
-
-
 
 ######################
 
@@ -146,7 +132,7 @@ private
     content.join(":")
   end
 
-   def rid_white_spaces_quotes(text)
+  def rid_white_spaces_quotes(text)
     text_arr = text.split('')
     until text_arr[0] != " "
       text_arr.shift
@@ -203,21 +189,4 @@ private
 
 end
 
-# newbie = ParseFile.new('test.dos')
-# newbie.parse
-# p newbie.get_value("header", "project")
-# p newbie.get_value("header", "budget")
-# p newbie.get_value("header", "accessed")
-# p newbie.get_value("meta data", "description")
-# p newbie.get_value("meta data", "correction text")
-# p newbie.get_value("trailer", "budget")
-
-
-
-# newbie.save
-# newbie.write("header", "math", "fun")
-
-# newbie2 = ParseFile.new('test2.dos')
-# newbie2.parse
-# newbie.write("friends", "weekend", "dinner in downtown Chicago")
 
