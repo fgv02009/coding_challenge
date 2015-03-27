@@ -133,7 +133,7 @@ class ParseFile
   def write
     File.open('test2.dos', 'w') { |file|
       @sections_content.each do |section, content|
-        p content.length
+        check_length(content)
         file << "\n\r[#{section}]\n\r"
         @sections_content[section].each do |content_hash|
           file << "#{format_content_hash(content_hash)}\n\r"
@@ -146,6 +146,8 @@ class ParseFile
     content = content.flatten
     content.join(":")
   end
+
+
 
 
 

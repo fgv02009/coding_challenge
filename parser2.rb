@@ -1,39 +1,34 @@
 require 'pry'
 class ParseFile
-
+  #TESTED
+  attr_reader :section_content, :file_str, :file_name, :section_content, :index_of_section_headers, :sections, :file_arr
   def initialize(file_name)
+    @file_str = ""
     @file_name = file_name
     @section_content = {}
     @index_of_section_headers = []
     @sections = []
-    self.parse
+    @file_arr = []
+  end
+#TESTED
+  def parse
+    File.readlines(@file_name).each do |line|
+      if section_or_key?(line)
+        add_star(line)
+      end
+      @file_str += line.strip + " "
+    end
+    p @file_str
+    set_section_content
+    set_sections
+    fill_section_content
   end
 
-  def parse
-    file_string = ""
-    File.readlines(@file_name).each do |line|
-      section_or_key?(line)
-      # if line.include?("\[") || line.include?("\:")
-      #   add_star(line)
-      # end
-      file_string += line.strip + " "
-    end
-    file_arr = file_string.split("*")
-
-    file_arr.each do |line|
-      if line.match(/\[[a-zA-Z\s]+\]/)
-        clean(line)
-        @section_content[line] = []
-      end
-    end
-    get_section_index(file_arr)
-
-    @section_content.each do |section_title, content_arr|
-      @sections << section_title
-    end
+#TESTED
+  def fill_section_content
       line_number_sections = Hash[@index_of_section_headers.zip(@sections)]
       line_number_sections.each do |line_num, section_title|
-        file_arr.each_with_index do |word, index|
+        @file_arr.each_with_index do |word, index|
           if index > @index_of_section_headers[-1]
             if @section_content.values.last.include?(word)
               next
@@ -45,9 +40,35 @@ class ParseFile
           end
         end
     end
+
     set_key_values
   end
+#TESTED#
+  def set_section_content
+    @file_arr = @file_str.split("*")
+    @file_arr.each do |line|
+      if line.match(/\[[a-zA-Z\s]+\]/)
+        clean(line)
+        @section_content[line] = []
+      end
+    end
 
+    get_section_index
+  end
+
+#TESTED#
+  def section_or_key?(line)
+    line.include?("\[") || line.include?("\:")
+  end
+
+#TESTED#
+  def set_sections
+    @section_content.each do |section_title, content_arr|
+      @sections << section_title
+    end
+  end
+
+#TESTED#
   def get_value(section, key)
     @section_content.each do |sect, content|
       if section == sect
@@ -58,11 +79,7 @@ class ParseFile
     end
   end
 
-  def section_or_key?(line)
-    if line.include?("\[") || line.include?("\:")
-        add_star(line)
-    end
-  end
+
 
 
 ##################################
@@ -72,7 +89,7 @@ class ParseFile
     if @section_content[section]
       @section_content[section] << (Hash.try_convert(key => value))
     else
-      @section_content[section] = (Hash.try_convert(key => value))
+      @section_content[section] = [(Hash.try_convert(key => value))]
     end
     self.save
   end
@@ -80,21 +97,43 @@ class ParseFile
   def save
     File.open('test2.dos', 'w') { |file|
       @section_content.each do |section, content|
-        file << "\n\r[#{section}]\n\r"
+        file << "\n[#{section}]\n"
         @section_content[section].each do |content_hash|
-          # if content_hash.values[0].length > 60
+          if content_hash.values[0].length > 60 && !content_hash.values[0].include?("\n")
+            split_line(content_hash)
+          end
 
-          file << "#{format_content_hash(content_hash)}\n\r"
+          file << "#{format_content_hash(content_hash)}\n"
         end
       end
     }
+
   end
+
+  def split_line(content_hash)
+    str = content_hash.values[0]
+    length = str.length
+    num_of_lines_to_split = length/60
+    until num_of_lines_to_split == 0
+      char = num_of_lines_to_split*60
+      until str[char] == " "
+        char -= 1
+      end
+      str.insert(char, "\n\r")
+      num_of_lines_to_split -=1
+    end
+    return str
+  end
+
+
+
+
 ######################
 
 private
 
-  def get_section_index(file_arr)
-    file_arr.each_with_index do |word, index|
+  def get_section_index
+    @file_arr.each_with_index do |word, index|
       if @section_content.has_key?(word)
         @index_of_section_headers << index
       end
@@ -164,17 +203,21 @@ private
 
 end
 
-newbie = ParseFile.new('test.dos')
-p newbie.get_value("header", "project")
-p newbie.get_value("header", "budget")
-p newbie.get_value("header", "accessed")
-p newbie.get_value("meta data", "description")
-p newbie.get_value("meta data", "correction text")
-p newbie.get_value("trailer", "budget")
+# newbie = ParseFile.new('test.dos')
+# newbie.parse
+# p newbie.get_value("header", "project")
+# p newbie.get_value("header", "budget")
+# p newbie.get_value("header", "accessed")
+# p newbie.get_value("meta data", "description")
+# p newbie.get_value("meta data", "correction text")
+# p newbie.get_value("trailer", "budget")
 
 
 
-newbie.save
-newbie.write("header", "math", "fun")
-newbie.write("friends", "weekend", "funz")
+# newbie.save
+# newbie.write("header", "math", "fun")
+
+# newbie2 = ParseFile.new('test2.dos')
+# newbie2.parse
+# newbie.write("friends", "weekend", "dinner in downtown Chicago")
 
